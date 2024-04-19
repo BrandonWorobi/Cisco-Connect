@@ -1,0 +1,54 @@
+from netmiko import ConnectHandler
+from getpass import getpass
+
+def create_device_config(ip, username, password):
+    return {
+        'device_type': 'cisco_ios',  # Device type for Cisco IOS
+        'ip': ip,                    # IP address of the device
+        'username': username,        # Username for the device
+        'password': password,        # Password for the device
+        'secret': password,          # Enable password
+    }
+
+def connect_to_device(device_config):
+    try:
+        return ConnectHandler(**device_config)
+    except Exception as e:
+        print("Failed to connect to device:", e)
+        return None
+
+def send_commands(device, commands):
+    if device:
+        device.enable()  # Ensure you are in privileged EXEC mode
+        output = device.send_config_set(commands)
+        print("Command Output:\n", output)
+        device.disconnect()
+
+def show_running_config(device):
+    if device:
+        output = device.send_command('show running-config')
+        print("\nRunning Configuration:\n", output)
+        device.disconnect()
+
+def main():
+    ip = input("Enter device IP: ")
+    username = input("Enter username: ")
+    password = getpass("Enter password: ")
+    
+    device_config = create_device_config(ip, username, password)
+    device = connect_to_device(device_config)
+    
+    if device:
+        action = input("Choose action [1: Send Commands, 2: Show Config]: ")
+        if action == '1':
+            # Define commands relevant to PoE configuration
+            commands = [
+                'interface range fa0/1-24',
+                'power inline auto',
+            ]
+            send_commands(device, commands)
+        elif action == '2':
+            show_running_config(device)
+
+if __name__ == "__main__":
+    main()
