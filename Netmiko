@@ -1,0 +1,34 @@
+from netmiko import ConnectHandler
+
+# Define the device to connect to
+device = {
+    'device_type': 'cisco_ios',   # Device type for Cisco IOS
+    'ip': '192.168.1.1',          # IP address of the device
+    'username': 'admin',          # Username for the device
+    'password': 'yourpassword',   # Password for the device
+    'secret': 'yourpassword',     # Enable password, if required
+}
+
+# Establish an SSH connection to the device
+net_connect = ConnectHandler(**device)
+
+# Enter enable mode
+net_connect.enable()
+
+# Configuration commands to send to the device
+commands = [
+    'interface loopback 0',
+    'ip address 10.0.0.1 255.255.255.0',
+    'no shutdown',
+]
+
+# Send configuration commands
+output = net_connect.send_config_set(commands)
+print("Configuration Output:\n", output)
+
+# Retrieve the current running configuration
+running_config = net_connect.send_command('show running-config')
+print("\nRunning Configuration:\n", running_config)
+
+# Disconnect the SSH session
+net_connect.disconnect()
